@@ -1,6 +1,6 @@
 from puzzle import Puzzle
 from util import PrioritizedPuzzle, Direction
-from typing import Optional, Callable
+from typing import Optional, Callable, Tuple
 from queue import PriorityQueue
 
 
@@ -38,25 +38,32 @@ def init_queue(puzzle: Puzzle, queueing_func: Callable) -> PriorityQueue:
     return nodes
 
 
-def search(puzzle: Puzzle, queueing_func: Callable) -> Optional[Puzzle]:
+def search(
+    puzzle: Puzzle, queueing_func: Callable
+) -> Optional[Tuple[Puzzle, int, int]]:
     """Inputs initial state of puzzle and queueing function, returns solved puzzle or None if no solution.
     Performs appropriate search using given queueing function.
     """
     nodes = init_queue(puzzle, queueing_func)
     dups = {puzzle.key()}
+    max_queue = 1
+    expanded_nodes = 0
 
     while not nodes.empty():
         prio_puzzle = nodes.get()
         node = prio_puzzle.item
-        print("curr node:", node, "\n")
+        expanded_nodes += 1
+        # print("curr node:", node, "\n")
         if node.is_solution():
-            return node
+            return node, max_queue, expanded_nodes
 
         for dir in Direction:
             new_node = node.move(dir)
             if new_node is not None and new_node.key() not in dups:
                 queueing_func(nodes, new_node)
                 dups.add(new_node.key())
+
+        max_queue = max(max_queue, nodes.qsize())
 
     return None
 

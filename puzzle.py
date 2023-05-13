@@ -9,14 +9,14 @@ class Puzzle:
         self,
         puzzle_state: List[List[str]],
         goal_state: Optional[List[List[str]]] = None,
-        size: int = 3,
         blank: str = "\u25A1",
     ) -> None:
         """Input puzzle state and optionally puzzle size, return None. Construct puzzle object."""
-        self.size = size
+        self.size = len(puzzle_state)
         self.blank = blank
         self.puzzle_state = puzzle_state
         self.goal_state = []
+        self.tile_goal_pos = {}
         self.blank_coord = []
         self.path = []
         self.cost = 0
@@ -27,12 +27,21 @@ class Puzzle:
         self.__init_blank_coord()
 
     def __init_goal_state(self, goal_state: Optional[List[List[str]]]) -> None:
-        """Inputs optional goal state, returns None. Initializes goal state of puzzle."""
+        """Inputs goal state, returns None. Initializes goal state of puzzle and positions of tiles in the goal state."""
         self.goal_state = (
             [["A", "N", "G"], ["E", "L", "I"], ["C", "A", "\u25A1"]]
             if goal_state is None
             else goal_state
         )
+
+        for i in range(self.size):
+            for j in range(self.size):
+                tile = self.goal_state[i][j]
+                if tile != self.blank:
+                    if tile not in self.tile_goal_pos:
+                        self.tile_goal_pos[tile] = [(i, j)]
+                    else:
+                        self.tile_goal_pos[tile].append((i, j))
 
     def __init_blank_coord(self) -> None:
         """Inputs None, returns None. Initialize coordinates of blank."""
@@ -62,6 +71,35 @@ class Puzzle:
                 output += "\n" + pipes + "\n"
 
         return output
+
+    def set_misplaced_tile_heuristic(self) -> None:
+        """Inputs None, returns None. Finds number of misplaced tiles."""
+        h = 0
+        for i in range(self.size):
+            for j in range(self.size):
+                if (
+                    self.puzzle_state[i][j] != self.blank
+                    and self.puzzle_state[i][j] != self.goal_state[i][j]
+                ):
+                    h += 1
+
+        self.misplaced_tile_heuristic = h
+
+    def set_manhattan_distance_heuristic(self) -> None:
+        """Inputs None, returns None. Finds sum of manhattan distances between each misplaced tile and its goal state position."""
+        h = 0
+        for i in range(self.size):
+            for j in range(self.size):
+                tile = self.puzzle_state[i][j]
+                if tile != self.blank and tile != self.goal_state[i][j]:
+                    h += min(
+                        [
+                            abs(i - goal_pos[0]) + abs(j - goal_pos[1])
+                            for goal_pos in self.tile_goal_pos[tile]
+                        ]
+                    )
+
+        self.manhattan_distance_heuristic = h
 
     def key(self) -> str:
         """Inputs None, returns string. Generates key, stringified puzzle state."""
@@ -112,6 +150,7 @@ class Puzzle:
         """Inputs initial node, returns list of puzzle nodes. Finds puzzle nodes on path to current node."""
         path_nodes = [initial_node]
         for idx, dir in enumerate(self.path):
+            # https://www.programiz.com/python-programming/methods/built-in/getattr
             next_node = path_nodes[idx].move(getattr(Direction, dir))
             if next_node is None:
                 raise Exception(f"Move {idx + 1} is not valid")
@@ -121,6 +160,8 @@ class Puzzle:
 
 
 if __name__ == "__main__":
-    puzzle = Puzzle([["A", "N", "G"], ["E", "L", "I"], ["C", "\u25A1", "A"]])
-    new_puzzle = puzzle.move(Direction.UP)
-    print(new_puzzle.key() if new_puzzle is not None else "None")
+    puzzle = Puzzle([["A", "N", "G"], ["E", "L", "C"], ["I", "\u25A1", "A"]])
+    puzzle.set_misplaced_tile_heuristic()
+    puzzle.set_manhattan_distance_heuristic()
+    print(puzzle.misplaced_tile_heuristic)
+    print(puzzle.manhattan_distance_heuristic)
