@@ -16,7 +16,12 @@ def misplaced_tile_queueing(nodes: PriorityQueue, new_node: Puzzle) -> None:
 
 
 def manhattan_distance_queueing(nodes: PriorityQueue, new_node: Puzzle) -> None:
-    pass
+    new_node.set_manhattan_distance_heuristic()
+    nodes.put(
+        PrioritizedPuzzle(
+            new_node.cost + new_node.manhattan_distance_heuristic, new_node
+        )
+    )
 
 
 def init_queue(puzzle: Puzzle, queueing_func: Callable) -> PriorityQueue:
@@ -33,7 +38,10 @@ def init_queue(puzzle: Puzzle, queueing_func: Callable) -> PriorityQueue:
             PrioritizedPuzzle(puzzle.cost + puzzle.misplaced_tile_heuristic, puzzle)
         )
     elif queueing_func is manhattan_distance_queueing:
-        pass
+        puzzle.set_manhattan_distance_heuristic()
+        nodes.put(
+            PrioritizedPuzzle(puzzle.cost + puzzle.manhattan_distance_heuristic, puzzle)
+        )
 
     return nodes
 

@@ -14,7 +14,7 @@ if __name__ == "__main__":
     bridge = [["A", "N", "G"], ["E", "L", "I"], ["A", "C", "\u25A1"]]
 
     puzzle = Puzzle(depth_31)
-    sol = search(puzzle, uniform_queueing)
+    sol = search(puzzle, manhattan_distance_queueing)
 
     if sol is not None:
         solved_puzzle, max_queue, expanded_nodes = sol
