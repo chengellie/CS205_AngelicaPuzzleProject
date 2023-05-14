@@ -1,0 +1,10 @@
+name,depth,uniform_cost_max_queue,misplaced_tile_max_queue,manhattan_dist_max_queue,uniform_cost_nodes_expanded,misplaced_tile_nodes_expanded,manhattan_dist_nodes_expanded
+depth_0,0,1,1,1,1,1,1
+depth_2,2,4,3,3,4,3,3
+depth_4,4,32,6,6,37,5,5
+depth_8,8,170,16,12,286,19,13
+depth_12,12,1142,84,26,1927,120,33
+depth_16,16,6562,406,110,13102,650,168
+depth_20,20,17894,1592,245,51073,2633,373
+depth_24,24,24188,7777,860,121913,15112,1513
+depth_31,31,25142,24569,11959,181439,126921,28286
