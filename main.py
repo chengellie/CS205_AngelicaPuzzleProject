@@ -1,6 +1,7 @@
 from search import *
-from typing import Dict
+from typing import Dict, Tuple
 import csv
+import argparse
 
 
 def run_puzzles(puzzle_states: Dict):
@@ -45,6 +46,35 @@ def run_puzzles(puzzle_states: Dict):
         csvwriter.writerows(rows)
 
 
+def user_input() -> Tuple:
+    parser = argparse.ArgumentParser(description="Custom input for Angelica Puzzle.")
+    parser.add_argument(
+        "-f",
+        type=str,
+        metavar="{filename.txt}",
+        help="Input file name with custom puzzle",
+    )
+    parser.add_argument(
+        "-s",
+        choices=["uniform-cost", "misplaced-tile", "manhattan-distance"],
+        type=str,
+        help="Choose search algorithm",
+    )
+    args = parser.parse_args()
+
+    custom_state = []
+    with open(args.f, "r") as file:
+        lines = file.readlines()
+        for line in lines:
+            row = line.split()
+            for idx, char in enumerate(row):
+                if char == ".":
+                    row[idx] = "\u25A1"
+            custom_state.append(row)
+
+    return custom_state, args.s
+
+
 if __name__ == "__main__":
     # https://www.fileformat.info/info/unicode/char/25a1/index.htm
     depth_0 = [["A", "N", "G"], ["E", "L", "I"], ["C", "A", "\u25A1"]]
@@ -73,15 +103,23 @@ if __name__ == "__main__":
 
     # run_puzzles(initial_states)
 
-    puzzle = Puzzle(depth_31)
-    sol = search(puzzle, uniform_queueing)
+    custom_state, search_alg = user_input()
+    puzzle = Puzzle(custom_state)
 
+    if search_alg == "uniform-cost":
+        sol = search(puzzle, uniform_queueing)
+    elif search_alg == "misplaced-tile":
+        sol = search(puzzle, misplaced_tile_queueing)
+    elif search_alg == "manhattan-distance":
+        sol = search(puzzle, manhattan_distance_queueing)
+
+    print("Initial State:", puzzle, sep="\n", end="\n\n")
     if sol is not None:
         solved_puzzle, max_queue, expanded_nodes = sol
         path = solved_puzzle.get_path_nodes(puzzle)
-        for node in path:
-            print(node, end="\n\n")
-
+        # for node in path:
+        #     print(node, end="\n\n")
+        print("Solution State:", solved_puzzle, sep="\n", end="\n\n")
         print("Depth:", solved_puzzle.cost)
         print("Path:", solved_puzzle.path)
         print("Maximum Queue Size:", max_queue)
