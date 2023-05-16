@@ -2,6 +2,7 @@ from search import *
 from typing import Dict, Tuple
 import csv
 import argparse
+import time
 
 
 def run_puzzles(puzzle_states: Dict):
@@ -14,6 +15,9 @@ def run_puzzles(puzzle_states: Dict):
         "uniform_cost_nodes_expanded",
         "misplaced_tile_nodes_expanded",
         "manhattan_dist_nodes_expanded",
+        "uniform_cost_time",
+        "misplaced_tile_time",
+        "manhattan_dist_time",
     ]
 
     rows = []
@@ -22,9 +26,16 @@ def run_puzzles(puzzle_states: Dict):
         print(key)
         data = []
         puzzle = Puzzle(puzzle_states[key])
+
+        start = time.time()
         uniform_sol = search(puzzle, uniform_queueing)
+        u_time = time.time() - start
+        start = time.time()
         misplaced_tile_sol = search(puzzle, misplaced_tile_queueing)
+        mt_time = time.time() - start
+        start = time.time()
         manhattan_dist_sol = search(puzzle, manhattan_distance_queueing)
+        md_time = time.time() - start
 
         if (
             uniform_sol is not None
@@ -38,6 +49,7 @@ def run_puzzles(puzzle_states: Dict):
             data.extend([key, len(u_solved_puzzle.path)])
             data.extend([u_max_queue, mt_max_queue, md_max_queue])
             data.extend([u_expanded_nodes, mt_expanded_nodes, md_expanded_nodes])
+            data.extend([u_time, mt_time, md_time])
             rows.append(data)
 
     with open("search_logs.csv", "w") as file:
@@ -101,17 +113,20 @@ if __name__ == "__main__":
         "depth_31": depth_31,
     }
 
-    # run_puzzles(initial_states)
+    run_puzzles(initial_states)
+    quit()
 
     custom_state, search_alg = user_input()
     puzzle = Puzzle(custom_state)
 
+    start = time.time()
     if search_alg == "uniform-cost":
         sol = search(puzzle, uniform_queueing)
     elif search_alg == "misplaced-tile":
         sol = search(puzzle, misplaced_tile_queueing)
     elif search_alg == "manhattan-distance":
         sol = search(puzzle, manhattan_distance_queueing)
+    end = time.time() - start
 
     print("Initial State:", puzzle, sep="\n", end="\n\n")
     if sol is not None:
@@ -124,6 +139,7 @@ if __name__ == "__main__":
         print("Path:", solved_puzzle.path)
         print("Maximum Queue Size:", max_queue)
         print("Nodes Expanded:", expanded_nodes)
+        print("Time:", round(end, 3), "seconds")
     else:
         print(puzzle)
         print("No solution")
